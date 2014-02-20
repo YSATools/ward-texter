@@ -56,8 +56,8 @@ angular.module('sortinghatApp', [
             templateUrl: 'views/main.html'
           , controller: 'MainCtrl as M'
           , resolve: {
-              data: function (Data) {
-                return Data.get();
+              mySession: function (StSession) {
+                return StSession.get();
               }
             }
           }

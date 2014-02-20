@@ -76,7 +76,19 @@ routes.forEach(function (fn) {
 
 app
   .use(connect.router(route))
-  .use(connect.router(require('./lib/ldsauth').create(function (req) { return req.user.currentUser.accessToken; })))
+  .use(connect.router(require('./lib-ldsauth/ldsauth').create(function (req) { return req.user.currentUser.accessToken; })))
+  .use('/libtel', function (req, res, next) {
+      if (req.user && req.user.currentUser
+        && ('ldsauth' === req.user.currentUser.provider || 'ldsorg' === req.user.currentUser.provider)) {
+        next();
+        return;
+      }
+
+      res.statusCode = 401;
+      res.end();
+    })
+  .use('/libtel', connect.router(require('./lib-tel-carrier/tel-carrier-route').route))
+  .use('/libtel', connect.router(require('./lib-tel-carrier/mail-route').route))
   .use(connect.static(path.join(__dirname, 'data')))
   //.use(connect.static(path.join(__dirname, 'dist')))
   //.use(connect.static(path.join(__dirname, '.tmp', 'concat')))

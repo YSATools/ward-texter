@@ -1,56 +1,109 @@
-html
-  body
-    //-.jumbotron
-      h1 &apos;Allo&comma; &apos;Allo&excl;
-      p.lead
-        img(src='images/yeoman.png', alt='I"m Yeoman')
-        br
-        | Always a pleasure scaffolding your apps&period;
+.jumbotron(ng-if="0 == M.step")
+  h1 Text Your Ward
+  p.lead
+    img(src='http://www.primaryclipart.com/images/chapel5.gif', alt='Text your ward')
+    br
+    | You can send a text to everyone, for free.
+  p
+    a.btn.btn-lg.btn-success(ng-click="M.next()") Sweet, Let me at it!
+
+.container
+  .row(ng-if="1 == M.step")
+    .col-md-10
+      h3 First things first...
+      p Let's take a moment to verify that you're a member of the church, then we'll grab your ward directory.
+      .option(ng-if="!M.message")
+        button.btn.btn-block.btn-social.btn-lg.btn-ldsauth(type="button", ng-click="M.loginWithLds()")
+          i.fa
+            img(src="/images/moroni.png")
+          span.signin Sign In with LDS.org
+      p {{ M.message }}
+
+  .row(ng-if="2 == M.step")
+    .col-md-10
+      h3 Thanks{{ M.name }}, You're almost done!
+
+      p.
+        It's going to take us between 5 and 20 seconds to download your ward directory.
+      p.
+        Why not take this time to get your message just right?
+
+      .form-group
+        label What's the message you want to send?
+        textarea.form-control(ng-model="M.sms", rows="5", placeholder="Short, sweet, concise. Remember: Who, What, When, Where, Why & How")
+        p
+          span(ng-bind="M.sms.length") 
+          span  of 140 units of awesome used.
+        p(ng-if="M.sms.length > 140", style="color: red;") (nice try on crankin' it to 11, but you only get 140 characters)
+
+      .form-group
+        label And who do you want to send it to?
+        .radio
+          label
+            input(ng-model="M.group", ng-change="M.groupChange()", type="radio", value="ward", checked)
+            span {{ M.wardName }}
+            span(ng-if="M.wardSize")   ({{ M.wardSize }} members)
+        .radio
+          label
+            input(ng-model="M.group", ng-change="M.groupChange()", type="radio", value="stake")
+            span {{ M.stakeName }}
+            span(ng-if="M.stakeSize")   ({{ M.wardsDownloaded }} of {{ M.stakeSize }} wards downloaded)
+            span(ng-if="M.stakeMembers")   ({{ M.stakeMembers }} members)
+
+      p.
+        Remember to include the most important details so that your wardies know when and where to be
+        and get right to the point. You're only getting one message 'on the house'.
+
+      div(ng-if="!M.ward")
+        p {{ M.message }}
+      div(ng-if="M.ward && M.sms.length > 0 && M.sms.length <= 140 && ('ward' === M.group || M.wards)")
+        a.btn.btn-lg.btn-success(ng-click="M.next()") Let's Continue!
+
+  .row.marketing(ng-if="3 == M.step")
+    .col-md-10
+      h3 Last step: We'll need to use your email account.
+
+      .form-group
+        label Your email address
+        input.form-control(ng-model="M.email", ng-change="M.detectProvider()", type="email", placeholder="john.doe@gmail.com")
+        span   
+        select.form-control(ng-model="M.provider", ng-change="M.detectProvider()")
+          optgroup(label="Major Email Providers")
+            option(value="auto") Automatically Detected
+          optgroup(label="Custom Hosted Email")
+            option(value="choose") -- CHOOSE ONE --
+            option(value="Gmail") Google Apps / Gmail
+            option(value="Hotmail") Microsoft's Outlook.com
+            option(value="Yahoo") Yahoo Business Email
+            option(value="Zoho") Zoho
+
+      .form-group
+        label Your email password
+        input.form-control(ng-model="M.password", type="password")
+
       p
-        a.btn.btn-lg.btn-success(ng-href='#') Splendid&excl;
+        span Why are we going to use 
+        i your 
+        span  email account?
+        span  Well, I'm glad you asked! There are a few reasons: 
+      ul
+        li replies will go to your inbox
+        li it keeps our costs down
+        li if you do something spammy, you'll be accountable for it and your wardies will know who to complain to
 
-    .row.marketing
-      div(ng-if="!M.current && !M.results") 
-        button.btn.btn-primary(ng-click="M.startQuiz()", type="button") Find Your House
-        p.
-          You gotsta know your house!
+      a.btn.btn-lg.btn-success(ng-click="M.next()") Send
 
-      div(ng-if="M.current")
-        span {{ M.current.total - M.current.remaining }} of {{ M.current.total }}
-        strong  Which suits you best?
-        span
-          |  (#
-          | {{ M.current.number }})
-        div
-          p(ng-repeat="choice in M.current.choices")
-            button.btn.btn-primary(ng-click="M.respond($index)", type="button") {{ $index + 1 }}
-            span  {{ choice.response }}
-      div(ng-if="M.result")
-        .section
-          h3
-            span Your house is
-            strong  {{ M.result }}
+  .row.marketing(ng-if="4 == M.step")
+    .col-md-10
+      h3 Thank you, Come again!
 
-          p Differential Confidence: {{ M.confidence1 }}%
-          p Average Confidence: {{ M.confidence2 }}%
+      p.
+        Your messages will be sending over the next few minutes.
+        Thanks for choosing ysawards.org for all of your texting needs
+        and have a great day. :-)
 
-          div(ng-repeat="outcome in M.outcomes")
-            p(ng-if="M.result === outcome.name").
-              {{ outcome.message }}
+      a.btn.btn-lg.btn-success(ng-click="M.next()") You bet I will!
 
-        .section
-          p Debug Totals:
-          pre {{ M.results | json }}
-
-          p Debug Responses:
-          pre {{ M.responses | json }}
-
-        .section
-          h3 More
-          p.
-            You're a Harry Potter fan. How exciting!
-
-        .section
-          h3 Welcome
-          p.
-            Welcome to your house. Way to be!
+  .row.marketing(ng-if="5 == M.step")
+    .col-md-10
+      h3 Dang straight.
