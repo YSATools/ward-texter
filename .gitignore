@@ -1,3 +1,8 @@
+.*.sw*
+app/views/*.html
+app/angular-ui-bootstrap
+app/bower_components
+
 lib-cov
 *.seed
 *.log

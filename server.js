@@ -76,6 +76,7 @@ routes.forEach(function (fn) {
 
 app
   .use(connect.router(route))
+  .use(connect.router(require('./lib/ldsauth').create(function (req) { return req.user.currentUser.accessToken; })))
   .use(connect.static(path.join(__dirname, 'data')))
   //.use(connect.static(path.join(__dirname, 'dist')))
   //.use(connect.static(path.join(__dirname, '.tmp', 'concat')))
