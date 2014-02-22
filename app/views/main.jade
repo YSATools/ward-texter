@@ -54,14 +54,20 @@
         Remember to include the most important details so that your wardies know when and where to be
         and get right to the point. You're only getting one message 'on the house'.
 
-      div(ng-if="!M.ward")
+      div(ng-if="M.message")
         p {{ M.message }}
       div(ng-if="M.ward && M.sms.length > 0 && M.sms.length <= 140 && ('ward' === M.group || M.wards)")
         a.btn.btn-lg.btn-success(ng-click="M.next()") Let's Continue!
 
   .row(ng-if="3 == M.step")
     .col-md-12
-      h3 Uncheck anyone that you want to omit
+      h3 Review the people being contacted
+
+      p
+        span Looks Good? 
+        a.btn.btn-lg.btn-success(ng-click="M.next()") Next!
+
+      h4 Uncheck anyone that you want to omit
 
       form.navbar-form(role="search")
         .input-group-btn
@@ -70,24 +76,28 @@
             .btn.btn-info
               span.glyphicon.glyphicon-search
 
+      .form-group
+        a.btn.btn-lg.btn-info(ng-click="M.selectAll()") Select All
+        span   
+        a.btn.btn-lg.btn-info(ng-click="M.selectNone()") Select None
+
       .col-md-12.checkbox(
       , ng-attr-style="height: 48px; position: relative; background-color: #F0F0F0"
       )
-        label
-          div(style="float: left; height: 48px; padding: 6px;")
-          div(style="float: left; height: 48px; width: 84px; padding: 5px")
-            center Pictures
-          div(style="float: left; height: 48px; width: 180px; padding: 5px;")
-            span Name
-          div(style="float: left; height: 48px; width: 120px; padding: 5px;")
-            div(style="float: right;")
-              span Phone Numbers
-            div(style="clear: both;")
-          div(style="float: right; height: 48px; width: 240px; padding: 5px;")
-            div(style="float: right;")
-              span Email Addresses
-            div(style="clear: both;")
+        div(style="float: left; height: 48px; padding: 6px;")
+        div(style="float: left; height: 48px; width: 84px; padding: 5px")
+          center Pictures
+        div(style="float: left; height: 48px; width: 180px; padding: 5px;")
+          span Name
+        div(style="float: left; height: 48px; width: 120px; padding: 5px;")
+          div(style="float: right;")
+            span Phone Numbers
           div(style="clear: both;")
+        div(style="float: right; height: 48px; width: 240px; padding: 5px;")
+          div(style="float: right;")
+            span Email Addresses
+          div(style="clear: both;")
+        div(style="clear: both;")
 
       .col-md-12.checkbox(
         ng-repeat="member in M.households | filter:M.searchTextDebounced"
@@ -126,30 +136,6 @@
             div(style="clear: both;")
           div(style="clear: both;")
      
-      //-table.table.table-striped
-        tr
-          th 
-          th Pic
-          th Name
-          th Number
-          th Number
-          th Email
-          th Email
-        tr.checkbox(
-          ng-repeat="member in M.households | filter:searchText"
-        , ng-attr-style="background-color: {{'FEMALE' == member.gender && '#FDD7E4' || '#ADDFFF' }}"
-        )
-          label
-            td
-              input(type="checkbox", ng-model="member.headOfHousehold.exclude", ng-checked="!member.headOfHousehold.exclude")
-            td
-              img(style="height: 48px;", ng-src="{{member.headOfHousehold.imageData || member.householdInfo.imageData}}")
-            td(ng-bind="member.headOfHousehold.name")
-            td(ng-bind="member.headOfHousehold.phone")
-            td(ng-bind="member.householdInfo.phone")
-            td(ng-bind="member.headOfHousehold.email")
-            td(ng-bind="member.householdInfo.email")
-
       a.btn.btn-lg.btn-success(ng-click="M.next()") Next!
 
   .row(ng-if="4 == M.step")
@@ -184,7 +170,7 @@
         li it keeps our costs down
         li if you do something spammy, you'll be accountable for it and your wardies will know who to complain to
 
-      a.btn.btn-lg.btn-success(ng-click="M.next()") Send
+      a.btn.btn-lg.btn-success(ng-click="M.send()") Send
 
   .row.marketing(ng-if="5 == M.step")
     .col-md-10

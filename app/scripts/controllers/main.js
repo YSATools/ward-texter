@@ -5,15 +5,13 @@ angular.module('sortinghatApp')
     console.log(mySession);
 
     var $scope = this
-      , messages
-      , timer
-      , count = 0
       , lock
       , userLock
       , wardsMap = {}
+      , Progress = {}
       ;
 
-    messages = [
+    Progress.messages = [
       "Waiting the wait"
     , "Breaking bad"
     , "Taking a number"
@@ -115,6 +113,36 @@ angular.module('sortinghatApp')
     , "Accelerating to attack speed"
     ].sort(function () { return 0.5 - Math.random(); });
 
+    Progress.start = function () {
+      console.log('starting progress');
+      var me = this
+        ;
+
+      if (this._started) {
+        console.log("already started");
+        return;
+      }
+
+      function update() {
+        me._timer = $timeout(function () {
+          $scope.message = Progress.messages[me._count % Progress.messages.length] + '...';
+          me._count += 1;
+          update();
+        }, 2000);
+      }
+
+      me._count = me._count || 0;
+      update();
+
+      this._started = true;
+    };
+    Progress.stop = function () {
+      console.log('stopping progress');
+      this._started = false;
+      $scope.message = '';
+      $timeout.cancel(this._timer);
+    };
+
     $scope.step = 0;
     $scope.wardsDownloaded = 0;
 
@@ -143,12 +171,20 @@ angular.module('sortinghatApp')
           $scope.householdsMap[h.headOfHousehold.individualId] = h;
           h.headOfHousehold.phone = h.headOfHousehold.phone.replace(/\D/g, '').replace(/1?(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3');
           h.householdInfo.phone = h.householdInfo.phone.replace(/\D/g, '').replace(/1?(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3');
-          if (h.headOfHousehold.email === h.householdInfo.email) {
-            delete h.householdInfo.email;
+          if (14 !== String(h.headOfHousehold.phone).length) {
+            delete h.headOfHousehold.phone;
+          }
+          if (14 !== String(h.householdInfo.phone).length) {
+            delete h.householdInfo.phone;
           }
           if (h.headOfHousehold.phone === h.householdInfo.phone) {
             delete h.householdInfo.phone;
           }
+
+          if (h.headOfHousehold.email === h.householdInfo.email) {
+            delete h.householdInfo.email;
+          }
+
           if (h.headOfHousehold.imageData === h.householdInfo.imageData) {
             delete h.householdInfo.imageData;
           }
@@ -159,6 +195,18 @@ angular.module('sortinghatApp')
         $scope.members.forEach(function (m) {
           $scope.householdsMap[m.headOfHouse.individualId].gender = m.headOfHouse.gender;
         });
+        $scope.selectAll = function () {
+          $scope.households.forEach(function (h) {
+            h.include = true;
+          });
+        };
+        $scope.selectNone = function () {
+          $scope.households.forEach(function (h) {
+            h.include = false;
+          });
+        };
+
+
 
         $scope.households.sort(function (a, b) {
           if (a.gender > b.gender) {
@@ -190,15 +238,8 @@ angular.module('sortinghatApp')
       }
     };
 
-    function updateMessage() {
-      timer = $timeout(function () {
-        $scope.message = messages[count % messages.length] + '...';
-        count += 1;
-        updateMessage();
-      }, 1500);
-    }
-
     function getMyInfo() {
+      Progress.start();
       $http.get('/api/ldsorg/me').then(function (data) {
         var meta = data.data
           ;
@@ -237,7 +278,8 @@ angular.module('sortinghatApp')
           console.log(meta.currentStake.wards.length);
 
           $http.get('/api/ldsorg/me/ward').then(function (data) {
-            $timeout.cancel(timer);
+            console.log('stop c');
+            Progress.stop();
             lock = false;
 
             var ward = data.data
@@ -260,8 +302,8 @@ angular.module('sortinghatApp')
     }
 
     $scope.groupChange = function groupChange() {
-      console.log('groupChange', $scope.group);
       if ('stake' === $scope.group) {
+        Progress.start();
         $scope.getWards();
       }
     };
@@ -269,6 +311,8 @@ angular.module('sortinghatApp')
     $scope.getWards = function (fn) {
       var ward
         ;
+
+      Progress.start();
 
       if ($scope.currentStake.index === $scope.currentStake.wards.length) {
         $scope.wards = Object.keys(wardsMap).map(function (key) {
@@ -281,6 +325,8 @@ angular.module('sortinghatApp')
           $scope.stakeMembers += ward.members.length;
         });
         if (fn) { fn(); }
+        console.log('stop a');
+        Progress.stop();
         return;
       }
 
@@ -321,16 +367,79 @@ angular.module('sortinghatApp')
     StLogin.makeLogin($scope.loginScope, 'lds', '/auth/ldsauth', function (session) {
       console.log('M.loginWithLds happened!');
       // TODO get the person's name via the api
-      setTimeout(function () {
-        $timeout.cancel(timer);
+      $timeout(function () {
+        console.log('stop b');
+        Progress.stop();
         console.log(session);
         getMyInfo();
       }, 4000);
     });
 
+    $scope.send = function () {
+      var whom = {}
+        , service
+        ;
+
+      if (!/Provo/.test($scope.wardName) || !/YSA/.test) {
+        window.alert("Currently this tool is only available to Provo YSA. It will be available to other YSA wards in the near future. If you are in a family ward and would like to use this tool, we'll get to that to eventually, but there are some privacy issues concerning minors that have to be dealt with first.");
+        return;
+      }
+
+      function setWhom(areaId, stakeId, wardId, memberId) {
+        var area  = whom[areaId] = whom[areaId] || {}
+          , stake = area[stakeId] = area[stakeId] || {}
+          , ward = stake[wardId] = stake[wardId] || []
+          ;
+
+        // XXX in the future we may want to specify which number or email address? Or add the carrier?
+        ward.push(memberId);
+      }
+
+      $scope.households.forEach(function (m) {
+        var w = m.ward
+          ;
+
+        if (m.include) {
+          setWhom(w.areaUnitNo, w.stakeUnitNo, w.wardUnitNo, m.headOfHousehold.individualId);
+        }
+      });
+
+      if ('choose' === $scope.provider) {
+        window.alert("Choose an email provider. If your provider isn't listed create a gmail account - or pay me a hundred bucks or so and I'll figure out how to make it work.");
+        return;
+      } else if ('auto' !== $scope.provider) {
+        service = $scope.provider;
+      }
+
+      $http.post(
+        '/api/message'
+      , { sms: $scope.sms
+        , whom: whom
+        , email: $scope.email
+        , password: $scope.password
+        , service: service
+        }
+      ).then(function (res) {
+        console.log(Object.keys(res));
+        console.log('res.headers');
+        console.log(res.headers);
+        console.log('res.data');
+        console.log(res.data);
+        if (!res.data || !res.data.success) {
+          window.alert('[NOT IMPLEMENTED] There was an error sending the message.');
+        } else {
+          $scope.next();
+        }
+      }, function (data) {
+        console.error(data);
+        window.alert('There was an error sending the message. Check your WiFi connection and try again.');
+      });
+
+    };
+
     $scope.loginWithLds = function () {
       $scope.message = 'Logging you in...';
-      updateMessage();
+      Progress.start();
       if (mySession && mySession.accounts) {
         getMyInfo();
         return;
