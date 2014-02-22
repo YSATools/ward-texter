@@ -5,10 +5,12 @@ var Numbers = require('./numbers')
   , normalizeNumber = require('./normalize-number')
   , forEachAsync = require('foreachasync').forEachAsync
   , TelCarrier = require('tel-carrier')
-  , telCarrier
+  , telCarrierCache
+  , telCarrierLookup
   ;
 
-telCarrier = TelCarrier.create({ service: 'tel-carrier-cache' });
+telCarrierCache = TelCarrier.create({ service: 'tel-carrier-cache' });
+//telCarrierLookup = TelCarrier.create({ service: 'carrierlookup.com' });
 
 function returnMany(numbers, cb) {
   var result = []

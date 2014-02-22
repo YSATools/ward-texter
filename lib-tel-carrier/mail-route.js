@@ -3,10 +3,12 @@
 var nodemailer = require('nodemailer')
   , forEachAsync = require('foreachasync').forEachAsync
   , TelCarrier = require('tel-carrier')
-  , telCarrier
+  , telCarrierCache
+  , telCarrierLookup
   ;
 
-telCarrier = TelCarrier.create({ service: 'tel-carrier-cache' });
+telCarrierCache = TelCarrier.create({ service: 'tel-carrier-cache' });
+//telCarrierLookup = TelCarrier.create({ service: 'carrierlookup.com' });
 
 function normalizeNumber(number) {
   var valNum = /(?=\+?1)?(\d{10})$/.exec(String(number))
@@ -15,13 +17,13 @@ function normalizeNumber(number) {
   return valNum && ('+1' + valNum[1]);
 }
 
-function returnMany(numbers, cb) {
+function getGatewayAddresses(numbers, cb, telCarrier) {
   var result = []
     ;
 
   forEachAsync(numbers, function (next, number) {
     // sometimes '+' becomes ' ' or '%20'
-    var valNum = normalizeNumber(number) 
+    var valNum = normalizeNumber(number)
       ;
 
     if (!valNum) {
@@ -41,11 +43,6 @@ function returnMany(numbers, cb) {
   });
 }
 
-
-function getGatewayAddresses(numbers, fn) {
-  returnMany(numbers, fn);
-}
-
 function route(app) {
   app.post('/sms', function (req, res) {
     if (!req.body.service) {
@@ -62,12 +59,12 @@ function route(app) {
       return;
     }
 
-    getGatewayAddresses(req.body.numbers, function (addresses) {
+    function gotGatewayAddresses(addresses) {
       var transport
         , headers = {}
         , opts = {}
         , max = 160
-        , tail = ' via grouptextfree'
+        , tail = ' via ysawards.org'
         , bodyMax = max - tail.length
         ;
 
@@ -108,7 +105,13 @@ function route(app) {
 
         res.send(err);
       });
-    });
+    }
+
+    getGatewayAddresses(
+      req.body.numbers
+    , gotGatewayAddresses
+    , ('pizza' === req.body.secret ? telCarrierLookup : telCarrierCache)
+    );
   });
 }
 

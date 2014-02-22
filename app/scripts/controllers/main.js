@@ -14,14 +14,106 @@ angular.module('sortinghatApp')
       ;
 
     messages = [
-      "Logging you in..."
-    , "Configurating the configurations..."
-    , "Authenticating with the authorities..."
-    , "Streaming all the things..."
-    , "Watching cat videos..."
-    , "Checking facebook..."
-    , "Wow! More cat videos..."
-    ];
+      "Waiting the wait"
+    , "Breaking bad"
+    , "Taking a number"
+    , "Filling out paperwork"
+    , "Using a black or blue ball point pen"
+    , "Watching the pot boil"
+    , "Keeping promises"
+    , "Configurating the configurations"
+    , "Authenticating with the authorities"
+    , "Duct taping the ducks"
+    , "Cleaning all the things"
+    , "Watching cat videos"
+    , "Streaming digital content"
+    , "Checking facebook"
+    , "Waiting for the hot water to turn on"
+    , "Checking out Beiber's twitter feed"
+    , "Wow! More cat videos"
+    , "Setting phasers to stun"
+    , "Plunging the pipework"
+    , "Rescuing the princess"
+    , "Making the horizons vertical"
+    , "Loading"
+      // Matrix
+    , "Going down the rabbit whole"
+    , "Taking the red pill"
+      // Finding Nemo
+    , "Finding nemo"
+      // Zoolander
+    , "Being ridiculously good-looking"
+    , "Remembering thinking \"wow, you're ridiculously good looking\""
+    , "Building a building at least... three times bigger than this"
+      // Harry Potter
+    , "Destroying Horcruxes"
+      // Gravity
+    , "Making it down there in one piec"
+      // Psych
+    , "Fist bumping"
+    , "Having great hair"
+      // Chuck
+    , "Flashing on the intersect"
+      // Doctor Who
+    , "Running"
+    , "Allons-y-ing"
+      // Emperor's new Groove
+    , "Throwing off the groove"
+    , "Pulling the lever"
+    , "Leading you down the path of righteousness"
+    , "Leading you down the path that rocks"
+    , "And I'm one of those two, right?"
+      // Princess Bride
+    , "Finding true love" // ??
+    , "Building up an immunity to iocane powder"
+    , "Blaving"
+      // BTTF
+    , "Going back to the future"
+    , "Getting to 88 miles per hour"
+    , "Generating 1.21 gigawatts"
+      // Toy Story
+    , "Riding like the wind"
+      // Mary Poppins
+    , "Tidying up the nursery"
+      // OUYA!
+      // https://devs.ouya.tv/update_strings.txt
+    , "Preparing to televise the Revolution"
+    , "Downloading awesome sauce"
+    , "Maximizing fun level"
+    , "Shifting bits"
+    , "Tasting rainbows"
+    , "Herding cats"
+    , "Aligning synergies"
+    , "Shooting stars"
+    , "Well, I never!"
+    , "Bending genres"
+    , "Stretching analogies"
+    , "Calculating odds"
+    , "Peeling away layers"
+    , "Reducing complexity"
+    , "Opening flaps"
+    , "Inventing emoticons"
+    , "Sharpening skates"
+    , "Keeping calm"
+    , "Refactoring bezier curves"
+    , "We Must Perform A Quirkafleeg"
+    //, "To be honest, just downloading a firmware update"
+    , "To be honest, just downloading data"
+    , "Rearranging deckchairs"
+    , "Arming Photon Torpedoes"
+    , "Adding the fun"
+      // STAR WARS
+      // http://www.rebellegion.com/forum/viewtopic.php?t=44301&start=0&sid=7de4a81df6ce49432b1d35dd7f15b650
+    , "Staying on target"
+    , "Looking at the size of that thing"
+    , "Watching for enemy fighters"
+    , "Staying in formation"
+    , "Blowing this thing so we can go home"
+    , "Making the jump to lightspeed"
+    , "Destroying the Death Star"
+    , "Locking S-foils in attack position"
+    , "Accelerating to attack speed"
+    ].sort(function () { return 0.5 - Math.random(); });
 
     $scope.step = 0;
     $scope.wardsDownloaded = 0;
@@ -31,7 +123,54 @@ angular.module('sortinghatApp')
     $scope.email = '';
     $scope.password = '';
 
+    // Yes, I know this is a terribly wrong way to go through states.
     $scope.next = function () {
+      if (2 === $scope.step) {
+        console.log('step 2 wardsMap', wardsMap);
+        $scope.households = [];
+        $scope.householdsMap = {};
+        $scope.members = [];
+        $scope.membersMap = {};
+        Object.keys(wardsMap).forEach(function (key) {
+          var ward = wardsMap[key]
+            ;
+
+          $scope.households = $scope.households.concat(ward.households);
+          $scope.members = $scope.members.concat(ward.members);
+        });
+
+        $scope.households.forEach(function (h) {
+          $scope.householdsMap[h.headOfHousehold.individualId] = h;
+          h.headOfHousehold.phone = h.headOfHousehold.phone.replace(/\D/g, '').replace(/1?(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3');
+          h.householdInfo.phone = h.householdInfo.phone.replace(/\D/g, '').replace(/1?(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3');
+          if (h.headOfHousehold.email === h.householdInfo.email) {
+            delete h.householdInfo.email;
+          }
+          if (h.headOfHousehold.phone === h.householdInfo.phone) {
+            delete h.householdInfo.phone;
+          }
+          if (h.headOfHousehold.imageData === h.householdInfo.imageData) {
+            delete h.householdInfo.imageData;
+          }
+          if (h.headOfHousehold.phone || h.householdInfo.phone || h.headOfHousehold.email || h.householdInfo.email) {
+            h.include = true;
+          }
+        });
+        $scope.members.forEach(function (m) {
+          $scope.householdsMap[m.headOfHouse.individualId].gender = m.headOfHouse.gender;
+        });
+
+        $scope.households.sort(function (a, b) {
+          if (a.gender > b.gender) {
+            return 1;
+          } else if (a.gender < b.gender) {
+            return -1;
+          } else {
+            return 0;
+          }
+        });
+      }
+
       userLock = false;
       if (lock) {
         return;
@@ -53,8 +192,7 @@ angular.module('sortinghatApp')
 
     function updateMessage() {
       timer = $timeout(function () {
-        console.log(count, messages.length, count % messages.length, messages);
-        $scope.message = messages[count % messages.length];
+        $scope.message = messages[count % messages.length] + '...';
         count += 1;
         updateMessage();
       }, 1500);
@@ -110,7 +248,7 @@ angular.module('sortinghatApp')
             $scope.wardSize = ward.members.length;
             $scope.ward = ward;
 
-            console.log('ward downloaded');
+            console.log('ward downloaded', ward);
             console.log(ward.members.length);
 
             if (!userLock) {
@@ -168,6 +306,17 @@ angular.module('sortinghatApp')
       });
     };
 
+    $scope.debounceCount = 0;
+    $scope.debounceSearchText = function () {
+      $scope.debounceCount += 1;
+      if (0 !== $scope.debounceCount % 4) {
+        $timeout.cancel($scope.debounceToken);
+      }
+      $scope.debounceToken = $timeout(function () {
+        $scope.searchTextDebounced = $scope.searchText;
+      }, 250);
+    };
+
     $scope.loginScope = {};
     StLogin.makeLogin($scope.loginScope, 'lds', '/auth/ldsauth', function (session) {
       console.log('M.loginWithLds happened!');
@@ -180,7 +329,7 @@ angular.module('sortinghatApp')
     });
 
     $scope.loginWithLds = function () {
-      $scope.message = 'Loading stuff...';
+      $scope.message = 'Logging you in...';
       updateMessage();
       if (mySession && mySession.accounts) {
         getMyInfo();
