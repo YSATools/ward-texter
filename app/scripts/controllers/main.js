@@ -46,7 +46,7 @@ angular.module('sortinghatApp')
       // Harry Potter
     , "Destroying Horcruxes"
       // Gravity
-    , "Making it down there in one piec"
+    , "Making it down there in one piece"
       // Psych
     , "Fist bumping"
     , "Having great hair"
@@ -258,6 +258,7 @@ angular.module('sortinghatApp')
 
         $http.get('/api/ldsorg/me/household').then(function (data) {
           var household = data.data
+            , url
             ;
 
           console.log('household');
@@ -277,7 +278,8 @@ angular.module('sortinghatApp')
           console.log('meta.currentStake.wards.length');
           console.log(meta.currentStake.wards.length);
 
-          $http.get('/api/ldsorg/me/ward').then(function (data) {
+          url = '/api/ldsorg/stakes/' + meta.currentUnits.stakeUnitNo + '/wards/' + meta.currentUnits.wardUnitNo;
+          $http.get(url).then(function (data) {
             console.log('stop c');
             Progress.stop();
             lock = false;

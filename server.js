@@ -5,6 +5,7 @@ var connect = require('connect')
   , app = connect()
   , auth = require('./auth')
   , config = require('./config')
+  , messengerRoute = require('./messenger').route
   , routes
   ;
 
@@ -76,6 +77,7 @@ routes.forEach(function (fn) {
 
 app
   .use(connect.router(route))
+  .use(connect.router(messengerRoute))
   .use(connect.router(require('./lib-ldsauth/ldsauth').create(function (req) { return req.user.currentUser.accessToken; })))
   .use('/libtel', function (req, res, next) {
       if (req.user && req.user.currentUser
