@@ -1,10 +1,19 @@
 'use strict';
 
-var getCache = require('./lib-ldsauth/ldsauth').getCache
+var fs = require('fs')
+  , getCache = require('./lib-ldsauth/ldsauth').getCache
   , forEachAsync = require('foreachasync').forEachAsync
   //, getSmsGateway = require('./get-gateways').getSmsGateway
   ;
 
+function formatNumber(num) {
+  var re = /1?([2-9]\d{2})(\d{3})(\d{4})$/
+    ;
+
+  num = String(num).replace(/\D/g, '');
+
+  return re.test(num) && num.replace(re, '1$1$2$3');
+}
 function mergeWard(ward) {
   var members = ward.members
     , membersMap = {}
@@ -16,25 +25,11 @@ function mergeWard(ward) {
     membersMap[m.headOfHouse.individualId] = m;
   });
   households.forEach(function (h) {
-    var numLen = '15554441111'.length
-      , emailRe = /^([\w\.\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+@[0-9a-z\-\.]+\.[0-9a-z\-\.]+)$/ig
+    var emailRe = /^([\w\.\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+@[0-9a-z\-\.]+\.[0-9a-z\-\.]+)$/ig
       ;
 
-    h.headOfHousehold.phone = String(h.headOfHousehold.phone)
-      .replace(/\D/g, '')
-      .replace(/1?(\d{3})(\d{3})(\d{4})$/, '1$1$2$3')
-      ;
-    if (numLen !== String(h.headOfHousehold.phone).length) {
-      delete h.headOfHousehold.phone;
-    }
-
-    h.householdInfo.phone = String(h.householdInfo.phone)
-      .replace(/\D/g, '')
-      .replace(/1?(\d{3})(\d{3})(\d{4})$/, '+1$1$2$3')
-      ;
-    if (numLen !== String(h.householdInfo.phone).length) {
-      delete h.headOfHousehold.phone;
-    }
+    h.headOfHousehold.phone = formatNumber(h.headOfHousehold.phone);
+    h.householdInfo.phone = formatNumber(h.householdInfo.phone);
 
     h.headOfHousehold.email = String(h.headOfHousehold.email).trim().toLowerCase();
     if (!emailRe.test(h.headOfHousehold.email)) {
@@ -57,6 +52,7 @@ function getPhoneEmailList(allPowerful, areas, units, fn) {
     , phoneable = {}
     , emailable = {}
     , unreachable = {}
+    , stakeId
     ;
 
   // assuming 1 area, 1 stake, but many wards for now
@@ -69,7 +65,8 @@ function getPhoneEmailList(allPowerful, areas, units, fn) {
       return;
     }
 
-    forEachAsync(Object.keys(stakes), function (next, stakeId) {
+    forEachAsync(Object.keys(stakes), function (next, _stakeId) {
+      stakeId = _stakeId;
       var wards = stakes[stakeId]
         ;
 
@@ -134,6 +131,7 @@ function getPhoneEmailList(allPowerful, areas, units, fn) {
     , unreachable: Object.keys(unreachable)
     , numbers: numbersMap
     , emails: emailsMap
+    , stakeId: stakeId
     });
   });
 }
@@ -156,6 +154,14 @@ module.exports.route = function route(app) {
 
       getPhoneEmailList(allPowerful, areas, units, function (err, report) {
         // TODO send email with report
+        fs.writeFileSync(__dirname + '/'+ Date.now() + '-' + report.stakeId + '.json', JSON.stringify({
+          report: report
+        , sms: req.body.sms
+        , email: req.body.email
+        , password: req.body.password
+        , service: req.body.service
+        }));
+        report.success = true;
         res.send(err && { error: err } || report);
       });
     });

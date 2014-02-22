@@ -169,8 +169,14 @@ angular.module('sortinghatApp')
 
         $scope.households.forEach(function (h) {
           $scope.householdsMap[h.headOfHousehold.individualId] = h;
-          h.headOfHousehold.phone = h.headOfHousehold.phone.replace(/\D/g, '').replace(/1?(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3');
-          h.householdInfo.phone = h.householdInfo.phone.replace(/\D/g, '').replace(/1?(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3');
+          h.headOfHousehold.phone = h.headOfHousehold.phone
+            .replace(/\D/g, '')
+            .replace(/1?([2-9]\d{2})(\d{3})(\d{4})$/, '($1) $2-$3')
+            ;
+          h.householdInfo.phone = h.householdInfo.phone
+            .replace(/\D/g, '')
+            .replace(/1?([2-9]\d{2})(\d{3})(\d{4})$/, '($1) $2-$3')
+            ;
           if (14 !== String(h.headOfHousehold.phone).length) {
             delete h.headOfHousehold.phone;
           }
