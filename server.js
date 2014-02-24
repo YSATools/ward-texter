@@ -5,7 +5,7 @@ var connect = require('connect')
   , app = connect()
   , auth = require('./auth')
   , config = require('./config')
-  , messengerRoute = require('./messenger').route
+  , messengerRoute = require('./lib/messenger').route
   , routes
   ;
 
