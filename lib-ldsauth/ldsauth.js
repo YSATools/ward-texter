@@ -41,16 +41,17 @@ function getUrl(mid, accessToken, url, fn) {
   };
 
   function callback(error, response, body) {
-    if (!error && response.statusCode === 200) {
-      url = url.replace(/ldsorg\/me(\b.*)/, 'ldsorg/' + mid + '$1');
-      cache[url] = {
-        updated: Date.now()
-      , result: JSON.parse(body)
-      };
-      fn(null, body);
-    } else {
-      fn(body, null);
+    if (error || response.statusCode !== 200) {
+      fn(error || body, null);
+      return;
     }
+
+    url = url.replace(/ldsorg\/me(\b.*)/, 'ldsorg/' + mid + '$1');
+    cache[url] = {
+      updated: Date.now()
+    , result: JSON.parse(body)
+    };
+    fn(null, body);
   }
 
   request(options, callback);
@@ -69,19 +70,32 @@ function forwardOauthRequest(retrieveToken, req, res) {
       //, url = req.url
       ;
 
+    function fin(body) {
+      body = body || '{ "error": "unknown error" }';
+      if (!body) {
+        console.error(req.url);
+      }
+
+      if ('string' === typeof body) {
+        res.end(body);
+      } else {
+        res.send(body);
+      }
+    }
+
     if (!result) {
       getUrl(mid, accessToken, url, function (err, data) {
-        res.end(err && ('error: ' + err) || data);
+        fin(err && ('error: ' + err) || data);
       });
     } else if (now - updated > (24 * 60 * 60 * 1000)) {
       getUrl(mid, accessToken, req.url, function (err, data) {
-        res.end(err && ('error: ' + err) || data);
+        fin(err && ('error: ' + err) || data);
       });
     } else if (now - updated > (12 * 60 * 60 * 1000)) {
       getUrl(mid, accessToken, req.url, function () {});
-      res.end(result);
+      fin(result);
     } else {
-      res.end(result);
+      fin(result);
     }
   });
 }
