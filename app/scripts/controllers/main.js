@@ -169,11 +169,11 @@ angular.module('sortinghatApp')
 
         $scope.households.forEach(function (h) {
           $scope.householdsMap[h.headOfHousehold.individualId] = h;
-          h.headOfHousehold.phone = h.headOfHousehold.phone
+          h.headOfHousehold.phone = (h.headOfHousehold.phone||'')
             .replace(/\D/g, '')
             .replace(/1?([2-9]\d{2})(\d{3})(\d{4})$/, '($1) $2-$3')
             ;
-          h.householdInfo.phone = h.householdInfo.phone
+          h.householdInfo.phone = (h.householdInfo.phone||'')
             .replace(/\D/g, '')
             .replace(/1?([2-9]\d{2})(\d{3})(\d{4})$/, '($1) $2-$3')
             ;
@@ -248,6 +248,8 @@ angular.module('sortinghatApp')
       Progress.start();
       $http.get('/api/ldsorg/me').then(function (data) {
         var meta = data.data
+          , household = meta.currentHousehold
+          , url
           ;
 
         console.log('meta');
@@ -262,49 +264,43 @@ angular.module('sortinghatApp')
           }
         });
 
-        $http.get('/api/ldsorg/me/household').then(function (data) {
-          var household = data.data
-            , url
+        console.log('household');
+        console.log(household);
+
+        $scope.step += 1;
+
+        userLock = true;
+        lock = true;
+        console.log('got my household');
+        console.log(data);
+
+        $scope.name = ' ' + household.headOfHousehold.name.replace(/.*, /, '');
+        $scope.group = 'ward';
+
+        $scope.stakeSize = meta.currentStake.wards.length;
+        console.log('meta.currentStake.wards.length');
+        console.log(meta.currentStake.wards.length);
+
+        url = '/api/ldsorg/stakes/' + meta.currentUnits.stakeUnitNo + '/wards/' + meta.currentUnits.wardUnitNo;
+        $http.get(url).then(function (data) {
+          console.log('stop c');
+          Progress.stop();
+          lock = false;
+
+          var ward = data.data
             ;
 
-          console.log('household');
-          console.log(household);
+          wardsMap[ward.ward.wardUnitNo] = ward;
+          $scope.wardsDownloaded += 1;
+          $scope.wardSize = ward.members.length;
+          $scope.ward = ward;
 
-          $scope.step += 1;
+          console.log('ward downloaded', ward);
+          console.log(ward.members.length);
 
-          userLock = true;
-          lock = true;
-          console.log('got my household');
-          console.log(data);
-
-          $scope.name = ' ' + household.headOfHousehold.name.replace(/.*, /, '');
-          $scope.group = 'ward';
-
-          $scope.stakeSize = meta.currentStake.wards.length;
-          console.log('meta.currentStake.wards.length');
-          console.log(meta.currentStake.wards.length);
-
-          url = '/api/ldsorg/stakes/' + meta.currentUnits.stakeUnitNo + '/wards/' + meta.currentUnits.wardUnitNo;
-          $http.get(url).then(function (data) {
-            console.log('stop c');
-            Progress.stop();
-            lock = false;
-
-            var ward = data.data
-              ;
-
-            wardsMap[ward.ward.wardUnitNo] = ward;
-            $scope.wardsDownloaded += 1;
-            $scope.wardSize = ward.members.length;
-            $scope.ward = ward;
-
-            console.log('ward downloaded', ward);
-            console.log(ward.members.length);
-
-            if (!userLock) {
-              $scope.step += 1;
-            }
-          });
+          if (!userLock) {
+            $scope.step += 1;
+          }
         });
       });
     }
