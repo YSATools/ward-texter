@@ -13,7 +13,7 @@
       h3 First things first...
       p Let's take a moment to verify that you're a member of the church, then we'll grab your ward directory.
       .option(ng-if="!M.message")
-        button.btn.btn-block.btn-social.btn-lg.btn-ldsauth(type="button", ng-click="M.loginWithLds()")
+        button.btn.btn-block.btn-social.btn-lg.btn-ldsconnect(type="button", ng-click="M.loginWithLds()")
           i.fa
             img(src="/images/moroni.png")
           span.signin Sign In with LDS.org

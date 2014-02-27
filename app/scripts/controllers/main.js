@@ -244,14 +244,17 @@ angular.module('sortinghatApp')
       }
     };
 
-    function getMyInfo() {
+    function getMyInfo(err, session) {
       Progress.start();
       $http.get('/api/ldsorg/me').then(function (data) {
         var meta = data.data
           , household = meta.currentHousehold
-          , url
           ;
 
+        if (/error/.test(JSON.stringify(data))) {
+          window.alert("Oopsies. There was a connection error. Refresh and try again. :-)");
+          return;
+        }
         console.log('meta');
         console.log(meta);
 
@@ -267,8 +270,6 @@ angular.module('sortinghatApp')
         console.log('household');
         console.log(household);
 
-        $scope.step += 1;
-
         userLock = true;
         lock = true;
         console.log('got my household');
@@ -281,27 +282,35 @@ angular.module('sortinghatApp')
         console.log('meta.currentStake.wards.length');
         console.log(meta.currentStake.wards.length);
 
-        url = '/api/ldsorg/stakes/' + meta.currentUnits.stakeUnitNo + '/wards/' + meta.currentUnits.wardUnitNo;
-        $http.get(url).then(function (data) {
-          console.log('stop c');
-          Progress.stop();
-          lock = false;
+        $scope.step += 1;
 
-          var ward = data.data
-            ;
+        getMyAreaInfo(session, meta);
+      });
+    }
 
-          wardsMap[ward.ward.wardUnitNo] = ward;
-          $scope.wardsDownloaded += 1;
-          $scope.wardSize = ward.members.length;
-          $scope.ward = ward;
+    function getMyAreaInfo(session, meta) {
+      var url = '/api/ldsorg/stakes/' + meta.currentUnits.stakeUnitNo + '/wards/' + meta.currentUnits.wardUnitNo
+        ;
 
-          console.log('ward downloaded', ward);
-          console.log(ward.members.length);
+      $http.get(url).then(function (data) {
+        console.log('stop c');
+        Progress.stop();
+        lock = false;
 
-          if (!userLock) {
-            $scope.step += 1;
-          }
-        });
+        var ward = data.data
+          ;
+
+        wardsMap[ward.ward.wardUnitNo] = ward;
+        $scope.wardsDownloaded += 1;
+        $scope.wardSize = ward.members.length;
+        $scope.ward = ward;
+
+        console.log('ward downloaded', ward);
+        console.log(ward.members.length);
+
+        if (!userLock) {
+          $scope.step += 1;
+        }
       });
     }
 
@@ -368,15 +377,24 @@ angular.module('sortinghatApp')
     };
 
     $scope.loginScope = {};
-    StLogin.makeLogin($scope.loginScope, 'lds', '/auth/ldsauth', function (session) {
+    StLogin.makeLogin($scope.loginScope, 'lds', '/auth/ldsconnect', function (err, session) {
+      $timeout.cancel($scope.loginTimeout);
       console.log('M.loginWithLds happened!');
-      // TODO get the person's name via the api
-      $timeout(function () {
-        console.log('stop b');
+      if (err) {
+        console.error(err);
+        if (/Access Denied/.test(err)) {
+          // prevent bug caused by alert where $scope.message doesn't update
+          $timeout(function () {
+            window.alert("You denied us? Ouch... well, see ya later... (or try again if it was an accident)");
+          });
+        } else {
+          window.alert("Login failed. Sorry about that. You probably used the wrong username / password");
+        }
         Progress.stop();
-        console.log(session);
-        getMyInfo();
-      }, 4000);
+        return;
+      }
+      console.log(session);
+      getMyInfo(null, session);
     });
 
     $scope.send = function () {
@@ -444,12 +462,17 @@ angular.module('sortinghatApp')
     $scope.loginWithLds = function () {
       $scope.message = 'Logging you in...';
       Progress.start();
+
       if (mySession && mySession.accounts) {
-        getMyInfo();
+        getMyInfo(null, mySession);
         return;
       }
 
       console.log('M.loginWithLds happening...');
       $scope.loginScope.loginWithLds();
+
+      $scope.loginTimeout = $timeout(function () {
+        window.alert("Hmm... this is taking longer than expected. How about you refresh the page and try again?");
+      }, 30 * 1000);
     };
   });
