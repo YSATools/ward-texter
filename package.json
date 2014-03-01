@@ -16,7 +16,8 @@
     "json-storage": "~2.1.0",
     "dom-storage": "~2.0.0",
     "tel-carrier-gateways": "~2.0.0",
-    "nodemailer": "~0.6.0"
+    "nodemailer": "~0.6.0",
+    "request": "~2.34.0"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
