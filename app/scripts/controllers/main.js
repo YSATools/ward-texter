@@ -123,16 +123,26 @@ angular.module('sortinghatApp')
         return;
       }
 
+      function updateProgress() {
+        $scope.progress += 0.5;
+        if ($scope.progress >= 105) {
+          $scope.progress = 70;
+        }
+        me._timer2 = $timeout(updateProgress, 500);
+      }
+
       function update() {
-        me._timer = $timeout(function () {
+        function innerUpdate() {
           $scope.message = Progress.messages[me._count % Progress.messages.length] + '...';
           me._count += 1;
-          update();
-        }, 2000);
+          me._timer = $timeout(innerUpdate, 2000);
+        }
+        innerUpdate();
       }
 
       me._count = me._count || 0;
       update();
+      updateProgress();
 
       this._started = true;
     };
@@ -141,6 +151,7 @@ angular.module('sortinghatApp')
       this._started = false;
       $scope.message = '';
       $timeout.cancel(this._timer);
+      $timeout.cancel(this._timer2);
     };
 
     $scope.step = 0;
@@ -245,6 +256,7 @@ angular.module('sortinghatApp')
     };
 
     function getMyInfo(err, session) {
+      $scope.alertMsg = '';
       Progress.start();
       $http.get('/api/ldsorg/me').then(function (data) {
         var meta = data.data
@@ -252,7 +264,7 @@ angular.module('sortinghatApp')
           ;
 
         if (/error/.test(JSON.stringify(data))) {
-          window.alert("Oopsies. There was a connection error. Refresh and try again. :-)");
+          $scope.alertMsg = "Oopsies. There was a connection error. Refresh and try again. :-)";
           return;
         }
         console.log('meta');
@@ -460,6 +472,7 @@ angular.module('sortinghatApp')
     };
 
     $scope.loginWithLds = function () {
+      $scope.progress = 0;
       $scope.message = 'Logging you in...';
       Progress.start();
 
@@ -472,7 +485,8 @@ angular.module('sortinghatApp')
       $scope.loginScope.loginWithLds();
 
       $scope.loginTimeout = $timeout(function () {
-        window.alert("Hmm... this is taking longer than expected. How about you refresh the page and try again?");
-      }, 30 * 1000);
+        $scope.alertMsg = "Hmm... this is taking much longer than expected. "
+          + "Perhaps it would be best to refresh the page and try again.";
+      }, 45 * 1000);
     };
   });

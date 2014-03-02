@@ -8,181 +8,186 @@
     a.btn.btn-lg.btn-success(ng-click="M.next()") Sweet, Let me at it!
 
 .container
-  .row(ng-if="1 == M.step")
+  .row
     .col-md-10
-      h3 First things first...
-      p Let's take a moment to verify that you're a member of the church, then we'll grab your ward directory.
-      .option(ng-if="!M.message")
-        button.btn.btn-block.btn-social.btn-lg.btn-ldsconnect(type="button", ng-click="M.loginWithLds()")
-          i.fa
-            img(src="/images/moroni.png")
-          span.signin Sign In with LDS.org
-      p {{ M.message }}
-
-  .row(ng-if="2 == M.step")
-    .col-md-10
-      h3 Thanks{{ M.name }}, You're almost done!
-
-      p.
-        It's going to take us between 5 and 20 seconds to download your ward directory.
-      p.
-        Why not take this time to get your message just right?
-
-      .form-group
-        label What's the message you want to send?
-        textarea.form-control(ng-model="M.sms", rows="5", placeholder="Short, sweet, concise. Remember: Who, What, When, Where, Why & How")
-        p
-          span(ng-bind="M.sms.length") 
-          span  of 140 units of awesome used.
-        p(ng-if="M.sms.length > 140", style="color: red;") (nice try on crankin' it to 11, but you only get 140 characters)
-
-      .form-group
-        label And who do you want to send it to?
-        .radio
-          label
-            input(ng-model="M.group", ng-change="M.groupChange()", type="radio", value="ward", checked)
-            span {{ M.wardName }}
-            span(ng-if="M.wardSize")   ({{ M.wardSize }} members)
-        .radio
-          label
-            input(ng-model="M.group", ng-change="M.groupChange()", type="radio", value="stake")
-            span {{ M.stakeName }}
-            span(ng-if="M.stakeSize")   ({{ M.wardsDownloaded }} of {{ M.stakeSize }} wards downloaded)
-            span(ng-if="M.stakeMembers")   ({{ M.stakeMembers }} members)
-
-      p.
-        Remember to include the most important details so that your wardies know when and where to be
-        and get right to the point. You're only getting one message 'on the house'.
-
+      .alert.alert-warning(ng-if="M.alertMsg") {{ M.alertMsg }}
+      .progress(ng-if="M.message", ng-class="{ 'progress-striped': M.progress, 'active': M.progress }")
+        .progress-bar(
+          role="progressbar"
+        , aria-valuenow="{{ M.progress }}"
+        , aria-valuemin="0"
+        , aria-valuemax="1000"
+        , style="width: {{ M.progress }}%"
+        )
+          span.sr-only {{ M.progress }}% Complete
       div(ng-if="M.message")
         p {{ M.message }}
-      div(ng-if="M.ward && M.sms.length > 0 && M.sms.length <= 140 && ('ward' === M.group || M.wards)")
-        a.btn.btn-lg.btn-success(ng-click="M.next()") Let's Continue!
 
-  .row(ng-if="3 == M.step")
-    .col-md-12
-      h3 Review the people being contacted
+      div(ng-if="1 == M.step")
+        h3 First things first...
+        p Let's take a moment to verify that you're a member of the church, then we'll grab your ward directory.
+        .option(ng-if="!M.message")
+          button.btn.btn-block.btn-social.btn-lg.btn-ldsconnect(type="button", ng-click="M.loginWithLds()")
+            i.fa
+              img(src="/images/moroni.png")
+            span.signin Sign In with LDS.org
 
-      p
-        span Looks Good? 
-        a.btn.btn-lg.btn-success(ng-click="M.next()") Next!
+      div(ng-if="2 == M.step")
+        h3 Thanks {{ M.name }}, You're almost done!
+        p.
+          It's going to take us between 5 and 20 seconds to download your ward directory.
+        p.
+          Why not take this time to get your message just right?
 
-      h4 Uncheck anyone that you want to omit
+        .form-group
+          label What's the message you want to send?
+          textarea.form-control(ng-model="M.sms", rows="5", placeholder="Short, sweet, concise. Remember: Who, What, When, Where, Why & How")
+          p
+            span(ng-bind="M.sms.length") 
+            span  of 140 units of awesome used.
+          p(ng-if="M.sms.length > 140", style="color: red;") (nice try on crankin' it to 11, but you only get 140 characters)
 
-      form.navbar-form(role="search")
-        .input-group-btn
-          input.form-control(ng-model="M.searchText", ng-change="M.debounceSearchText()", type="search", placeholder="Search")
-          //-.input-button-group
-            .btn.btn-info
-              span.glyphicon.glyphicon-search
+        .form-group
+          label And who do you want to send it to?
+          .radio
+            label
+              input(ng-model="M.group", ng-change="M.groupChange()", type="radio", value="ward", checked)
+              span {{ M.wardName }}
+              span(ng-if="M.wardSize")   ({{ M.wardSize }} members)
+          .radio
+            label
+              input(ng-model="M.group", ng-change="M.groupChange()", type="radio", value="stake")
+              span {{ M.stakeName }}
+              span(ng-if="M.stakeSize")   ({{ M.wardsDownloaded }} of {{ M.stakeSize }} wards downloaded)
+              span(ng-if="M.stakeMembers")   ({{ M.stakeMembers }} members)
 
-      .form-group
-        a.btn.btn-lg.btn-info(ng-click="M.selectAll()") Select All
-        span   
-        a.btn.btn-lg.btn-info(ng-click="M.selectNone()") Select None
+        p.
+          Remember to include the most important details so that your wardies know when and where to be
+          and get right to the point. You're only getting one message 'on the house'.
 
-      .col-md-12.checkbox(
-      , ng-attr-style="height: 48px; position: relative; background-color: #F0F0F0"
-      )
-        div(style="float: left; height: 48px; padding: 6px;")
-        div(style="float: left; height: 48px; width: 84px; padding: 5px")
-          center Pictures
-        div(style="float: left; height: 48px; width: 180px; padding: 5px;")
-          span Name
-        div(style="float: left; height: 48px; width: 120px; padding: 5px;")
-          div(style="float: right;")
-            span Phone Numbers
-          div(style="clear: both;")
-        div(style="float: right; height: 48px; width: 240px; padding: 5px;")
-          div(style="float: right;")
-            span Email Addresses
-          div(style="clear: both;")
-        div(style="clear: both;")
+        div(ng-if="M.ward && M.sms.length > 0 && M.sms.length <= 140 && ('ward' === M.group || M.wards)")
+          a.btn.btn-lg.btn-success(ng-click="M.next()") Let's Continue!
 
-      .col-md-12.checkbox(
-        ng-repeat="member in M.households | filter:M.searchTextDebounced"
-      , ng-attr-style="height: 48px;position: relative; background-color: {{'FEMALE' == member.gender && '#FFF9FA' || '#F0FFFF' }}"
-      )
-        label
+      div(ng-if="3 == M.step")
+        h3 Review the people being contacted
+
+        p
+          span Looks Good? 
+          a.btn.btn-lg.btn-success(ng-click="M.next()") Next!
+
+        h4 Uncheck anyone that you want to omit
+
+        form.navbar-form(role="search")
+          .input-group-btn
+            input.form-control(ng-model="M.searchText", ng-change="M.debounceSearchText()", type="search", placeholder="Search")
+            //-.input-button-group
+              .btn.btn-info
+                span.glyphicon.glyphicon-search
+
+        .form-group
+          a.btn.btn-lg.btn-info(ng-click="M.selectAll()") Select All
+          span   
+          a.btn.btn-lg.btn-info(ng-click="M.selectNone()") Select None
+
+        .col-md-12.checkbox(
+        , ng-attr-style="height: 48px; position: relative; background-color: #F0F0F0"
+        )
           div(style="float: left; height: 48px; padding: 6px;")
-            input(type="checkbox", ng-model="member.include")
-          div(style="float: left; height: 48px; width: 84px; padding-top: 5px; padding-bottom: 5px;")
-            center
-              img(
-                ng-if="member.headOfHousehold.imageData"
-              , style="height: 48px;"
-              , ng-src="{{member.headOfHousehold.imageData}}"
-              )
-              img(
-                ng-if="member.householdInfo.imageData"
-              , style="height: 48px;"
-              , ng-src="{{member.householdInfo.imageData}}"
-              )
+          div(style="float: left; height: 48px; width: 84px; padding: 5px")
+            center Pictures
           div(style="float: left; height: 48px; width: 180px; padding: 5px;")
-            span(ng-bind="member.headOfHousehold.name")
+            span Name
           div(style="float: left; height: 48px; width: 120px; padding: 5px;")
             div(style="float: right;")
-              span(ng-bind="member.headOfHousehold.phone")
-            div(style="clear: both;")
-            div(style="float: right;")
-              span(ng-bind="member.householdInfo.phone")
+              span Phone Numbers
             div(style="clear: both;")
           div(style="float: right; height: 48px; width: 240px; padding: 5px;")
             div(style="float: right;")
-              span(ng-bind="member.headOfHousehold.email")
-            div(style="clear: both;")
-            div(style="float: right;")
-              span(ng-bind="member.householdInfo.email")
+              span Email Addresses
             div(style="clear: both;")
           div(style="clear: both;")
-     
-      a.btn.btn-lg.btn-success(ng-click="M.next()") Next!
 
-  .row(ng-if="4 == M.step")
-    .col-md-10
-      h3 Last step: We'll need to use your email account.
+        .col-md-12.checkbox(
+          ng-repeat="member in M.households | filter:M.searchTextDebounced"
+        , ng-attr-style="height: 48px;position: relative; background-color: {{'FEMALE' == member.gender && '#FFF9FA' || '#F0FFFF' }}"
+        )
+          label
+            div(style="float: left; height: 48px; padding: 6px;")
+              input(type="checkbox", ng-model="member.include")
+            div(style="float: left; height: 48px; width: 84px; padding-top: 5px; padding-bottom: 5px;")
+              center
+                img(
+                  ng-if="member.headOfHousehold.imageData"
+                , style="height: 48px;"
+                , ng-src="{{member.headOfHousehold.imageData}}"
+                )
+                img(
+                  ng-if="member.householdInfo.imageData"
+                , style="height: 48px;"
+                , ng-src="{{member.householdInfo.imageData}}"
+                )
+            div(style="float: left; height: 48px; width: 180px; padding: 5px;")
+              span(ng-bind="member.headOfHousehold.name")
+            div(style="float: left; height: 48px; width: 120px; padding: 5px;")
+              div(style="float: right;")
+                span(ng-bind="member.headOfHousehold.phone")
+              div(style="clear: both;")
+              div(style="float: right;")
+                span(ng-bind="member.householdInfo.phone")
+              div(style="clear: both;")
+            div(style="float: right; height: 48px; width: 240px; padding: 5px;")
+              div(style="float: right;")
+                span(ng-bind="member.headOfHousehold.email")
+              div(style="clear: both;")
+              div(style="float: right;")
+                span(ng-bind="member.householdInfo.email")
+              div(style="clear: both;")
+            div(style="clear: both;")
+       
+        a.btn.btn-lg.btn-success(ng-click="M.next()") Next!
 
-      .form-group
-        label Your email address
-        input.form-control(ng-model="M.email", ng-change="M.detectProvider()", type="email", placeholder="john.doe@gmail.com")
-        span   
-        select.form-control(ng-model="M.provider", ng-change="M.detectProvider()")
-          optgroup(label="Major Email Providers")
-            option(value="auto") Automatically Detected
-          optgroup(label="Custom Hosted Email")
-            option(value="choose") -- CHOOSE ONE --
-            option(value="Gmail") Google Apps / Gmail
-            option(value="Hotmail") Microsoft's Outlook.com
-            option(value="Yahoo") Yahoo Business Email
-            option(value="Zoho") Zoho
+      div(ng-if="4 == M.step")
+        h3 Last step: We'll need to use your email account.
 
-      .form-group
-        label Your email password
-        input.form-control(ng-model="M.password", type="password")
+        .form-group
+          label Your email address
+          input.form-control(ng-model="M.email", ng-change="M.detectProvider()", type="email", placeholder="john.doe@gmail.com")
+          span   
+          select.form-control(ng-model="M.provider", ng-change="M.detectProvider()")
+            optgroup(label="Major Email Providers")
+              option(value="auto") Automatically Detected
+            optgroup(label="Custom Hosted Email")
+              option(value="choose") -- CHOOSE ONE --
+              option(value="Gmail") Google Apps / Gmail
+              option(value="Hotmail") Microsoft's Outlook.com
+              option(value="Yahoo") Yahoo Business Email
+              option(value="Zoho") Zoho
 
-      p
-        span Why are we going to use 
-        i your 
-        span  email account?
-        span  Well, I'm glad you asked! There are a few reasons: 
-      ul
-        li replies will go to your inbox
-        li it keeps our costs down
-        li if you do something spammy, you'll be accountable for it and your wardies will know who to complain to
+        .form-group
+          label Your email password
+          input.form-control(ng-model="M.password", type="password")
 
-      a.btn.btn-lg.btn-success(ng-click="M.send()") Send
+        p
+          span Why are we going to use 
+          i your 
+          span  email account?
+          span  Well, I'm glad you asked! There are a few reasons: 
+        ul
+          li replies will go to your inbox
+          li it keeps our costs down
+          li if you do something spammy, you'll be accountable for it and your wardies will know who to complain to
 
-  .row.marketing(ng-if="5 == M.step")
-    .col-md-10
-      h3 Thank you, Come again!
+        a.btn.btn-lg.btn-success(ng-click="M.send()") Send
 
-      p.
-        Your messages will be sending over the next few minutes.
-        Thanks for choosing ysawards.org for all of your texting needs
-        and have a great day. :-)
+        div(ng-if="5 == M.step")
+          h3 Thank you, Come again!
 
-      a.btn.btn-lg.btn-success(ng-click="M.next()") You bet I will!
+          p.
+            Your messages will be sending over the next few minutes.
+            Thanks for choosing ysawards.org for all of your texting needs
+            and have a great day. :-)
 
-  .row.marketing(ng-if="6 == M.step")
-    .col-md-10
-      h3 Dang straight.
+          a.btn.btn-lg.btn-success(ng-click="M.next()") You bet I will!
+
+        div(ng-if="6 == M.step")
+          h3 Dang straight.
