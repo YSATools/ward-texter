@@ -35,7 +35,7 @@ angular.module('sortinghatApp')
     , "Making the horizons vertical"
     , "Loading"
       // Matrix
-    , "Going down the rabbit whole"
+    , "Going down the rabbit hole"
     , "Taking the red pill"
       // Finding Nemo
     , "Finding nemo"
