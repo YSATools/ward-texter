@@ -89,7 +89,15 @@ module.exports.init = function (passport, config, opts) {
     // Redirect the user to LdsConnect for authentication.  When complete,
     // LdsConnect will redirect the user back to the application at
     //   /auth/ldsconnect/callback
-    rest.get('/auth/ldsconnect', passport.authenticate('ldsconnect', { scope: ['email'] }));
+    // There's not so much as a common convention for oauth scope
+    // http://brandur.org/oauth-scope
+    rest.get('/auth/ldsconnect', passport.authenticate('ldsconnect', { scope: [
+      'stake.adults:name,photo,phone,email::texting,emailing'     // all non-minors in a ward
+    , 'stake.leadership:name,photo,phone,email::texting,emailing' // just leadership
+    //, 'ward.leadership:name,photo,phone,email::texting,emailing'
+    //, 'ward.members:name,photo,phone,email::texting,emailing'
+    //, 'me:name,photo,phone,email::texting,emailing::texting,emailing'
+    ] }));
   }
 
   return route;

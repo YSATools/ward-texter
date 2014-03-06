@@ -31,6 +31,10 @@ function route(rest) {
   rest.get('/api/session', function (req, res) {
     res.send(getPublic(req.user) || { role: 'guest', as: 'get' });
   });
+  rest.get('/api/session/logout', function (req, res) {
+    req.logout();
+    res.send({ role: 'guest', as: 'delete' });
+  });
   rest.delete('/api/session', function (req, res) {
     req.logout();
     res.send({ role: 'guest', as: 'delete' });

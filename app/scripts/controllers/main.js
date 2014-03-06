@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('sortinghatApp')
-  .controller('MainCtrl', function ($timeout, $http, StLogin, mySession) {
+  .controller('MainCtrl', function ($timeout, $http, StLogin, StSession, mySession) {
     console.log(mySession);
 
     var $scope = this
@@ -408,6 +408,7 @@ angular.module('sortinghatApp')
         Progress.stop();
         return;
       }
+      StSession.update(session);
       console.log(session);
       getMyInfo(null, session);
     });
