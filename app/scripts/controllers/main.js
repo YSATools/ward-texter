@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('sortinghatApp')
-  .controller('MainCtrl', function ($timeout, $http, StLogin, StSession, mySession) {
+  .controller('MainCtrl', function ($rootScope, $timeout, $http, Stripe, StLogin, StSession, mySession) {
     console.log(mySession);
 
     var $scope = this
@@ -266,6 +266,7 @@ angular.module('sortinghatApp')
           , household = meta.currentHousehold
           ;
 
+        $scope.meta = meta;
         if (/error/.test(JSON.stringify(data))) {
           $scope.alertMsg = "Oopsies. There was a connection error. Refresh and try again. :-)";
           return;
@@ -413,15 +414,10 @@ angular.module('sortinghatApp')
       getMyInfo(null, session);
     });
 
-    $scope.send = function () {
+    function processSelected() {
       var whom = {}
-        , service
+        , count = 0
         ;
-
-      if (!/Provo/.test($scope.wardName) || !/YSA/.test) {
-        window.alert("Currently this tool is only available to Provo YSA. It will be available to other YSA wards in the near future. If you are in a family ward and would like to use this tool, we'll get to that to eventually, but there are some privacy issues concerning minors that have to be dealt with first.");
-        return;
-      }
 
       function setWhom(areaId, stakeId, wardId, memberId) {
         var area  = whom[areaId] = whom[areaId] || {}
@@ -438,9 +434,31 @@ angular.module('sortinghatApp')
           ;
 
         if (m.include) {
+          if (m.headOfHousehold.phone || m.householdInfo.phone) {
+            count += 1;
+          }
+          if (m.headOfHousehold.phone && m.householdInfo.phone
+            && (m.headOfHousehold.phone !==  m.householdInfo.phone)) {
+            count += 1;
+          }
           setWhom(w.areaUnitNo, w.stakeUnitNo, w.wardUnitNo, m.headOfHousehold.individualId);
         }
       });
+
+      return { count: count, whom: whom };
+    }
+
+    $scope.send = function () {
+      var service
+        , whom
+        ;
+
+      if (!/Provo/.test($scope.wardName) || !/YSA/.test) {
+        window.alert("Currently this tool is only available to Provo YSA. It will be available to other YSA wards in the near future. If you are in a family ward and would like to use this tool, we'll get to that to eventually, but there are some privacy issues concerning children < 18 that have to be dealt with first.");
+        return;
+      }
+
+      whom = processSelected().whom;
 
       if ('choose' === $scope.provider) {
         window.alert("Choose an email provider. If your provider isn't listed create a gmail account - or pay me a hundred bucks or so and I'll figure out how to make it work.");
@@ -492,5 +510,37 @@ angular.module('sortinghatApp')
         $scope.alertMsg = "Hmm... this is taking much longer than expected. "
           + "Perhaps it would be best to refresh the page and try again.";
       }, 45 * 1000);
+    };
+
+    /*
+      card: Object
+      created: 1394136518
+      email: "coolaj86@gmail.com"
+      id: "tok_103cMW2r5QTT3HO4msvPzpEO"
+      livemode: false
+      object: "token"
+      type: "card"
+      used: false
+    */
+    // check for payment beforehand
+    $scope.payWithStripe = function () {
+      var count = processSelected().count
+        ;
+
+      Stripe.subscribe(
+        { name: 'TextYourWard.org'
+        , group: $scope.group
+        , displayAmount: count * 2
+        , plan: $scope.plan // TODO
+        , email: $scope.meta.currentHousehold.headOfHousehold.email
+            || $scope.meta.currentHousehold.householdInfo.email
+        , description: 'Text ' + count + ' Ward Members ($' + ((count/50).toFixed(2)) + ')'
+        }
+      , function (resp) {
+          if (resp.data.success) {
+            $scope.unitHasPaid = true;
+          }
+        }
+      );
     };
   });

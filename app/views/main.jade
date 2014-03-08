@@ -177,7 +177,8 @@
           li it keeps our costs down
           li if you do something spammy, you'll be accountable for it and your wardies will know who to complain to
 
-        a.btn.btn-lg.btn-success(ng-click="M.send()") Send
+        a.btn.btn-lg.btn-success.stripe-pay(ng-if="!M.unitHasPaid", ng-click="M.payWithStripe()") Pay with Stripe
+        a.btn.btn-lg.btn-success(ng-if="M.unitHasPaid", ng-click="M.send()") Send
 
         div(ng-if="5 == M.step")
           h3 Thank you, Come again!

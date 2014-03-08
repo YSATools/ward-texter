@@ -18,8 +18,8 @@
     <link rel="stylesheet" href="styles/auth-modal.css">
     <!-- endbuild -->
 
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
-
   </head>
   <body ng-app="sortinghatApp">
     <!--[if lt IE 7]>
@@ -73,6 +73,7 @@
     <script src="bower_components/angular-cookies/angular-cookies.js"></script>
     <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
     <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
     <!-- endbuild -->
 
     <!-- build:js({.tmp,app}) scripts/scripts.js -->
@@ -80,12 +81,13 @@
     <script src="scripts/controllers/main.js"></script>
     <script src="scripts/controllers/nav.js"></script>
     <script src="scripts/controllers/login.js"></script>
+    <script src="scripts/controllers/account.js"></script>
     <script src="scripts/services/st-session.js"></script>
     <script src="scripts/services/st-login.js"></script>
+    <script src="scripts/services/stripe.js"></script>
     <script src="scripts/services/data.js"></script>
-    <script src="scripts/controllers/account.js"></script>
     <!-- endbuild -->
 
-    <script src="/angular-ui-bootstrap/dist/ui-bootstrap-tpls-0.7.0.js"></script>
+    <script src="https://checkout.stripe.com/checkout.js"></script>
 </body>
 </html>

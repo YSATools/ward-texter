@@ -9,6 +9,9 @@ var connect = require('connect')
   , routes
   ;
 
+require('https').globalAgent.options.ca = (require('https').globalAgent.options.ca||[])
+  .concat(require('./certificates'));
+
 if (!connect.router) {
   connect.router = require('connect_router');
 }
@@ -69,7 +72,7 @@ app
   .use(connect.urlencoded())
   .use(connect.compress())
   .use(connect.cookieParser())
-  .use(connect.session({ secret: 'fzzysnthbeeeeaith' }))
+  .use(connect.session({ secret: 'fzzysnthbesseeeaith' }))
   //.use(express.router)
   ;
   //route(app);
@@ -81,26 +84,13 @@ routes.forEach(function (fn) {
 
 app
   .use(connect.router(route))
+  .use(connect.router(require('./lib/payments').init(config.stripe).route))
   .use(connect.router(messengerRoute))
   .use(connect.router(require('./lib/ldsconnect').create(function (req) { return req.user.currentUser.accessToken; })))
-/*
-  .use('/libtel', function (req, res, next) {
-      if (req.user && req.user.currentUser
-        && ('ldsconnect' === req.user.currentUser.provider || 'ldsorg' === req.user.currentUser.provider)) {
-        next();
-        return;
-      }
-
-      res.statusCode = 401;
-      res.end();
-    })
-  .use('/libtel', connect.router(require('./lib-tel-carrier/tel-carrier-route').route))
-  .use('/libtel', connect.router(require('./lib-tel-carrier/mail-route').route))
-*/
   .use(connect.static(path.join(__dirname, 'data')))
-  //.use(connect.static(path.join(__dirname, 'dist')))
-  //.use(connect.static(path.join(__dirname, '.tmp', 'concat')))
   .use(connect.static(path.join(__dirname, 'app')))
+  .use(connect.static(path.join(__dirname, 'dist')))
+  //.use(connect.static(path.join(__dirname, '.tmp', 'concat')))
   .use(connect.static(path.join(__dirname, '.tmp')))
   ;
 
@@ -120,4 +110,4 @@ if (require.main === module) {
   return;
 }
 
-//module.exports = app;
+module.exports = app;

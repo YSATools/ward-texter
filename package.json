@@ -17,7 +17,8 @@
     "dom-storage": "~2.0.0",
     "tel-carrier-gateways": "~2.0.0",
     "nodemailer": "~0.6.0",
-    "request": "~2.34.0"
+    "request": "~2.34.0",
+    "stripe": "~2.4.2"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

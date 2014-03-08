@@ -2,6 +2,10 @@
 app/views/*.html
 app/angular-ui-bootstrap
 app/bower_components
+dist
+.tmp
+.sass-cache
+config.real.js
 
 lib-cov
 *.seed
